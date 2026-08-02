@@ -1,0 +1,9 @@
+<script>start("c:\\Users\\");</script>
+<script>onHasParentDirectory();</script>
+<script>addRow("All Users","All%20Users",1,0,"0 B",1711956817,"4/1/24, 3:33:37 PM");</script>
+<script>addRow("Default","Default",1,0,"0 B",1765102439,"12/7/25, 6:13:59 PM");</script>
+<script>addRow("Default User","Default%20User",1,0,"0 B",1711956817,"4/1/24, 3:33:37 PM");</script>
+<script>addRow("Public","Public",1,0,"0 B",1778646034,"5/13/26, 12:20:34 PM");</script>
+<script>addRow("祖龙始预言帝","%E7%A5%96%E9%BE%99%E5%A7%8B%E9%A2%84%E8%A8%80%E5%B8%9D",1,0,"0 B",1783419089,"7/7/26, 6:11:29 PM");</script>
+<script>addRow("����ʼ~1","%EF%BF%BD%EF%BF%BD%EF%BF%BD%EF%BF%BD%CA%BC~1",1,0,"0 B",1724302522,"8/22/24, 12:55:22 PM");</script>
+<script>addRow("desktop.ini","desktop.ini",0,174,"174 B",1711956244,"4/1/24, 3:24:04 PM");</script>
