@@ -11,6 +11,7 @@ $announceCount = $conn->query("SELECT COUNT(*) AS cnt FROM announcements")->fetc
 $eventCount = $conn->query("SELECT COUNT(*) AS cnt FROM events")->fetch_assoc()['cnt'];
 $serverCount = $conn->query("SELECT COUNT(*) AS cnt FROM servers")->fetch_assoc()['cnt'];
 $feedbackCount = $conn->query("SELECT COUNT(*) AS cnt FROM form_answers")->fetch_assoc()['cnt'];
+$logCount = $conn->query("SELECT COUNT(*) AS cnt FROM player_logs")->fetch_assoc()['cnt'];
 ?>
 
 <div style="max-width:100%; margin:0; padding:100px 0 40px; animation: fadeIn 0.5s ease;">
@@ -76,8 +77,8 @@ $feedbackCount = $conn->query("SELECT COUNT(*) AS cnt FROM form_answers")->fetch
 
         <!-- 右列：次要统计 + 快捷工具 -->
         <div style="display:flex; flex-direction:column; gap:24px;">
-            <!-- 活动、服务器、工单 -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+            <!-- 活动、服务器、日志 -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;">
                 <div class="dash-card" style="background:var(--surface-glass); backdrop-filter:blur(14px); border-radius:16px; padding:18px 16px; border:1px solid var(--border-light); box-shadow:var(--shadow-sm);">
                     <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:4px;">活动</div>
                     <div style="font-size:1.8rem; font-weight:800; color:var(--text);"><?php echo $eventCount; ?></div>
@@ -85,6 +86,10 @@ $feedbackCount = $conn->query("SELECT COUNT(*) AS cnt FROM form_answers")->fetch
                 <div class="dash-card" style="background:var(--surface-glass); backdrop-filter:blur(14px); border-radius:16px; padding:18px 16px; border:1px solid var(--border-light); box-shadow:var(--shadow-sm);">
                     <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:4px;">服务器</div>
                     <div style="font-size:1.8rem; font-weight:800; color:var(--text);"><?php echo $serverCount; ?></div>
+                </div>
+                <div class="dash-card" style="background:var(--surface-glass); backdrop-filter:blur(14px); border-radius:16px; padding:18px 16px; border:1px solid var(--border-light); box-shadow:var(--shadow-sm);">
+                    <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:4px;">玩家日志</div>
+                    <div style="font-size:1.8rem; font-weight:800; color:var(--text);"><?php echo $logCount; ?></div>
                 </div>
             </div>
 
@@ -108,6 +113,7 @@ $feedbackCount = $conn->query("SELECT COUNT(*) AS cnt FROM form_answers")->fetch
                     <a href="<?php echo BASE_URL; ?>/modules/events/edit.php" class="btn-auth" style="text-decoration:none; padding:10px; background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.2); color:#9b59b6; justify-content:center; font-size:0.85rem;">发布活动</a>
                     <a href="<?php echo BASE_URL; ?>/modules/servers/edit.php" class="btn-auth" style="text-decoration:none; padding:10px; background:rgba(26,188,156,0.1); border:1px solid rgba(26,188,156,0.2); color:#1abc9c; justify-content:center; font-size:0.85rem;">添加服务器</a>
                     <a href="<?php echo BASE_URL; ?>/modules/rules/edit.php" class="btn-auth" style="text-decoration:none; padding:10px; background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.2); color:#e74c3c; justify-content:center; font-size:0.85rem;">添加规则</a>
+                    <a href="<?php echo BASE_URL; ?>/modules/admin/player_logs.php" class="btn-auth" style="text-decoration:none; padding:10px; background:rgba(79,138,48,0.1); border:1px solid rgba(79,138,48,0.2); color:var(--mc-green); justify-content:center; font-size:0.85rem;">日志管理</a>
                 </div>
             </div>
         </div>

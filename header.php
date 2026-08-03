@@ -355,6 +355,7 @@ $isHome = isset($isHomePage) && $isHomePage;
                 <a href="http://igm.mchappyhut.club" target="_blank" rel="noopener">合集</a>
                 <a href="<?php echo BASE_URL; ?>/modules/timeline/index.php">事件</a>
                 <a href="<?php echo BASE_URL; ?>/modules/figures/index.php">人物志</a>
+                <a href="<?php echo BASE_URL; ?>/modules/player_logs/index.php">玩家日志</a>
                 <a href="<?php echo BASE_URL; ?>/modules/help/index.php">帮助中心</a>
             </div>
         </div>
