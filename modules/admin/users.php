@@ -2,6 +2,46 @@
 require_once __DIR__ . '/../../config.php';
 requireAdmin();
 
+// 手动添加用户（仅超级管理员）
+$addError = '';
+$addSuccess = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_user') {
+    if (!hasRole('super_admin')) {
+        $addError = '仅超级管理员可手动添加用户';
+    } else {
+        $newUsername = trim($_POST['new_username'] ?? '');
+        $newEmail = trim($_POST['new_email'] ?? '');
+        $newPassword = $_POST['new_password'] ?? '';
+        $newRole = $_POST['new_role'] ?? 'adventurer';
+
+        if (empty($newUsername) || empty($newEmail) || empty($newPassword)) {
+            $addError = '请填写所有必填字段';
+        } elseif (strlen($newPassword) < 6) {
+            $addError = '密码长度至少6位';
+        } elseif (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+            $addError = '邮箱格式不正确';
+        } else {
+            $checkStmt = $conn->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
+            $checkStmt->bind_param("ss", $newEmail, $newUsername);
+            $checkStmt->execute();
+            if ($checkStmt->get_result()->num_rows > 0) {
+                $addError = '邮箱或用户名已存在';
+            } else {
+                $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+                // 默认头像
+                $defaultAvatar = BASE_URL . '/assets/default-avatar.png';
+                $insertStmt = $conn->prepare("INSERT INTO users (username, email, password, role, avatar) VALUES (?, ?, ?, ?, ?)");
+                $insertStmt->bind_param("sssss", $newUsername, $newEmail, $hashed, $newRole, $defaultAvatar);
+                if ($insertStmt->execute()) {
+                    $addSuccess = "用户 {$newUsername} 添加成功！（角色：" . roleLabel($newRole) . "）";
+                } else {
+                    $addError = '添加失败：' . $conn->error;
+                }
+            }
+        }
+    }
+}
+
 $search = $_GET['search'] ?? '';
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $perPage = 20;
@@ -36,12 +76,26 @@ require_once __DIR__ . '/../../header.php';
 ?>
 
 <div style="max-width:1300px; margin:0 auto; padding:100px 20px 40px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+    <?php if ($addSuccess): ?>
+        <div style="background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); color:#2ecc71; padding:12px 20px; border-radius:10px; margin-bottom:16px;">✓ <?php echo htmlspecialchars($addSuccess); ?></div>
+    <?php endif; ?>
+    <?php if ($addError): ?>
+        <div style="background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.3); color:#e74c3c; padding:12px 20px; border-radius:10px; margin-bottom:16px;">✗ <?php echo htmlspecialchars($addError); ?></div>
+    <?php endif; ?>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
         <h1 style="font-size:2.2rem;">👥 用户管理</h1>
-        <form method="GET" style="display:flex; gap:8px;">
-            <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="搜索用户名或邮箱" style="padding:8px 16px; border:1px solid var(--border); border-radius:20px; background:var(--bg); color:var(--text);">
-            <button type="submit" class="btn-auth" style="padding:8px 16px;">搜索</button>
-        </form>
+        <div style="display:flex; gap:8px;">
+            <?php if (hasRole('super_admin')): ?>
+                <button onclick="openAddModal()" class="btn-auth" style="padding:8px 18px; background:var(--mc-green); color:#fff; white-space:nowrap;">
+                    <i class="fas fa-user-plus"></i> 添加用户
+                </button>
+            <?php endif; ?>
+            <form method="GET" style="display:flex; gap:8px;">
+                <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="搜索用户名或邮箱" style="padding:8px 16px; border:1px solid var(--border); border-radius:20px; background:var(--bg); color:var(--text);">
+                <button type="submit" class="btn-auth" style="padding:8px 16px;">搜索</button>
+            </form>
+        </div>
     </div>
 
     <div style="background:var(--surface-glass); backdrop-filter:blur(14px); border-radius:16px; overflow-x:auto;">
@@ -113,6 +167,53 @@ require_once __DIR__ . '/../../header.php';
     </div>
 </div>
 
+<!-- 添加用户弹窗（仅超级管理员可见） -->
+<?php if (hasRole('super_admin')): ?>
+<div id="addUserModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1001; align-items:center; justify-content:center;">
+    <div style="background:var(--surface); border-radius:16px; padding:32px; max-width:460px; width:100%; max-height:90vh; overflow-y:auto;">
+        <h3 style="margin-bottom:20px;">➕ 手动添加用户</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="add_user">
+            
+            <div style="margin-bottom:14px;">
+                <label style="font-weight:600; display:block; margin-bottom:4px;">用户名 <span style="color:#e74c3c;">*</span></label>
+                <input type="text" name="new_username" required placeholder="输入用户名"
+                    style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font-size:0.95rem;">
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label style="font-weight:600; display:block; margin-bottom:4px;">邮箱 <span style="color:#e74c3c;">*</span></label>
+                <input type="email" name="new_email" required placeholder="输入邮箱地址"
+                    style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font-size:0.95rem;">
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label style="font-weight:600; display:block; margin-bottom:4px;">密码 <span style="color:#e74c3c;">*</span></label>
+                <input type="password" name="new_password" required placeholder="至少6位密码" minlength="6"
+                    style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font-size:0.95rem;">
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <label style="font-weight:600; display:block; margin-bottom:4px;">角色</label>
+                <select name="new_role" style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font-size:0.95rem;">
+                    <option value="super_admin">超级管理员</option>
+                    <option value="admin">管理员</option>
+                    <option value="group_leader">团体负责人</option>
+                    <option value="senior_adventurer">高级冒险家</option>
+                    <option value="adventurer" selected>冒险家（默认）</option>
+                    <option value="restricted">受限用户</option>
+                </select>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button type="button" onclick="closeAddModal()" class="btn-auth" style="background:#95a5a6; color:#fff;">取消</button>
+                <button type="submit" class="btn-auth" style="background:var(--mc-green); color:#fff;">添加用户</button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
+
 <script>
 function editRole(id, username, currentRole) {
     document.getElementById('modalUserId').value = id;
@@ -122,6 +223,13 @@ function editRole(id, username, currentRole) {
 }
 // 点击背景关闭
 document.getElementById('roleModal').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+});
+
+// 添加用户弹窗
+function openAddModal() { document.getElementById('addUserModal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('addUserModal').style.display = 'none'; }
+document.getElementById('addUserModal').addEventListener('click', function(e) {
     if (e.target === this) this.style.display = 'none';
 });
 </script>

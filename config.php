@@ -50,6 +50,18 @@ function canPostInCommunity() {
     return in_array($user['role'], ['senior_adventurer', 'group_leader', 'admin', 'super_admin']);
 }
 
+function roleLabel($role) {
+    switch ($role) {
+        case 'super_admin': return '超级管理员';
+        case 'admin': return '管理员';
+        case 'group_leader': return '团体负责人';
+        case 'senior_adventurer': return '高级冒险家';
+        case 'adventurer': return '冒险家';
+        case 'restricted': return '受限用户';
+        default: return $role;
+    }
+}
+
 function redirect($url) {
     header("Location: $url");
     exit;
