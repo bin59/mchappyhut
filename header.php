@@ -339,6 +339,52 @@ $isHome = isset($isHomePage) && $isHomePage;
     </div>
     <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
     <nav class="nav-center" id="navCenter">
+        <?php
+        // 动态导航：从 nav_items 表读取，不存在时退回硬编码
+        $useDynamicNav = false;
+        $topItems = [];
+        $subItemsMap = [];
+        try {
+            $check = $conn->query("SHOW TABLES LIKE 'nav_items'");
+            if ($check && $check->num_rows > 0) {
+                $useDynamicNav = true;
+                $result = $conn->query("SELECT * FROM nav_items WHERE parent_id IS NULL AND is_visible = 1 ORDER BY sort_order ASC");
+                if ($result) $topItems = $result->fetch_all(MYSQLI_ASSOC);
+                
+                // 预加载所有下拉子项
+                $allSubs = $conn->query("SELECT * FROM nav_items WHERE parent_id IS NOT NULL AND is_visible = 1 ORDER BY sort_order ASC");
+                if ($allSubs) {
+                    while ($sub = $allSubs->fetch_assoc()) {
+                        $subItemsMap[$sub['parent_id']][] = $sub;
+                    }
+                }
+            }
+        } catch (Exception $e) {}
+        
+        if ($useDynamicNav && !empty($topItems)):
+            foreach ($topItems as $navItem):
+                if ($navItem['type'] === 'dropdown'):
+                    $subs = $subItemsMap[$navItem['id']] ?? [];
+        ?>
+            <div class="dropdown">
+                <a class="nav-link"><?php echo htmlspecialchars($navItem['title']); ?> <i class="fas fa-chevron-down" style="font-size:0.7rem; margin-left:4px;"></i></a>
+                <div class="dropdown-menu">
+                    <?php foreach ($subs as $sub): ?>
+                    <a href="<?php echo (strpos($sub['url'], 'http') === 0) ? htmlspecialchars($sub['url']) : BASE_URL . htmlspecialchars($sub['url']); ?>"
+                       <?php if ($sub['target'] === '_blank'): ?>target="_blank" rel="noopener"<?php endif; ?>>
+                       <?php echo htmlspecialchars($sub['title']); ?>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php else: ?>
+            <a class="nav-link" href="<?php echo (strpos($navItem['url'], 'http') === 0) ? htmlspecialchars($navItem['url']) : BASE_URL . htmlspecialchars($navItem['url']); ?>"
+               <?php if ($navItem['target'] === '_blank'): ?>target="_blank" rel="noopener"<?php endif; ?>>
+               <?php echo htmlspecialchars($navItem['title']); ?>
+            </a>
+        <?php endif;
+            endforeach;
+        else: // 硬编码兜底 ?>
         <a class="nav-link" href="<?php echo BASE_URL; ?>/index.php">首页</a>
         <a class="nav-link" href="<?php echo BASE_URL; ?>/modules/announcements/index.php">公告</a>
         <a class="nav-link" href="<?php echo BASE_URL; ?>/modules/rules/index.php">规则</a>
@@ -360,6 +406,7 @@ $isHome = isset($isHomePage) && $isHomePage;
             </div>
         </div>
         <a class="nav-link" href="<?php echo BASE_URL; ?>/modules/about/index.php">关于我们</a>
+        <?php endif; ?>
         <?php if (!isLoggedIn()): ?>
             <a class="btn-auth mobile-only-login" href="<?php echo BASE_URL; ?>/modules/user/login.php">登录/注册</a>
         <?php endif; ?>

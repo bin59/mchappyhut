@@ -114,6 +114,7 @@ $logCount = $conn->query("SELECT COUNT(*) AS cnt FROM player_logs")->fetch_assoc
                     <a href="<?php echo BASE_URL; ?>/modules/servers/edit.php" class="btn-auth" style="text-decoration:none; padding:10px; background:rgba(26,188,156,0.1); border:1px solid rgba(26,188,156,0.2); color:#1abc9c; justify-content:center; font-size:0.85rem;">添加服务器</a>
                     <a href="<?php echo BASE_URL; ?>/modules/rules/edit.php" class="btn-auth" style="text-decoration:none; padding:10px; background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.2); color:#e74c3c; justify-content:center; font-size:0.85rem;">添加规则</a>
                     <a href="<?php echo BASE_URL; ?>/modules/admin/player_logs.php" class="btn-auth" style="text-decoration:none; padding:10px; background:rgba(79,138,48,0.1); border:1px solid rgba(79,138,48,0.2); color:var(--mc-green); justify-content:center; font-size:0.85rem;">日志管理</a>
+                    <a href="<?php echo BASE_URL; ?>/modules/admin/nav_manage.php" class="btn-auth" style="text-decoration:none; padding:10px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.2); color:#3498db; justify-content:center; font-size:0.85rem;">导航管理</a>
                 </div>
             </div>
         </div>
